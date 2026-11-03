@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
 
     // El ID de "Pantalla en pantalla" (Picture-in-picture) es de formato nativo con video
     private fun loadAd() {
+        probeFormats()
         val adLoader = AdLoader.Builder(this, AD_UNIT_ID)
             .forNativeAd { ad ->
                 if (isDestroyed || isFinishing) {
@@ -66,6 +67,36 @@ class MainActivity : AppCompatActivity() {
             .withNativeAdOptions(NativeAdOptions.Builder().build())
             .build()
         adLoader.loadAd(AdRequest.Builder().build())
+    }
+
+    // Sonda temporal: registra qué formatos acepta el ID (filtrar Logcat por "AdProbe")
+    private fun probeFormats() {
+        val req = AdRequest.Builder().build()
+        fun err(n: String, e: LoadAdError) = Log.e("AdProbe", "$n -> FALLA ${e.code} ${e.message}")
+        com.google.android.gms.ads.appopen.AppOpenAd.load(this, AD_UNIT_ID, req,
+            object : com.google.android.gms.ads.appopen.AppOpenAd.AppOpenAdLoadCallback() {
+                override fun onAdLoaded(ad: com.google.android.gms.ads.appopen.AppOpenAd) { Log.i("AdProbe", "AppOpen -> OK") }
+                override fun onAdFailedToLoad(e: LoadAdError) = err("AppOpen", e)
+            })
+        com.google.android.gms.ads.rewarded.RewardedAd.load(this, AD_UNIT_ID, req,
+            object : com.google.android.gms.ads.rewarded.RewardedAdLoadCallback() {
+                override fun onAdLoaded(ad: com.google.android.gms.ads.rewarded.RewardedAd) { Log.i("AdProbe", "Rewarded -> OK") }
+                override fun onAdFailedToLoad(e: LoadAdError) = err("Rewarded", e)
+            })
+        com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd.load(this, AD_UNIT_ID, req,
+            object : com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAdLoadCallback() {
+                override fun onAdLoaded(ad: com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd) { Log.i("AdProbe", "RewardedInterstitial -> OK") }
+                override fun onAdFailedToLoad(e: LoadAdError) = err("RewardedInterstitial", e)
+            })
+        val banner = com.google.android.gms.ads.AdView(this).apply {
+            setAdSize(com.google.android.gms.ads.AdSize.MEDIUM_RECTANGLE)
+            adUnitId = AD_UNIT_ID
+            adListener = object : AdListener() {
+                override fun onAdLoaded() { Log.i("AdProbe", "Banner -> OK") }
+                override fun onAdFailedToLoad(e: LoadAdError) = err("Banner", e)
+            }
+        }
+        banner.loadAd(req)
     }
 
     private fun showPipAd(ad: NativeAd) {
