@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.gms.ads.nativead.NativeAdView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/pipAdView"
+    android:layout_width="220dp"
+    android:layout_height="wrap_content"
+    android:background="#222222"
+    android:elevation="12dp"
+    android:visibility="gone">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <com.google.android.gms.ads.nativead.MediaView
+            android:id="@+id/pipMedia"
+            android:layout_width="match_parent"
+            android:layout_height="124dp" />
+
+        <TextView
+            android:id="@+id/pipHeadline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:padding="8dp"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/pipClose"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="top|end"
+        android:background="#99000000"
+        android:contentDescription="Cerrar anuncio"
+        android:src="@android:drawable/ic_menu_close_clear_cancel" />
+</com.google.android.gms.ads.nativead.NativeAdView>

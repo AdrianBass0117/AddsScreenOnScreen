@@ -2,6 +2,8 @@ package com.aldrinlewys117.addspantallaenpantalla
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -9,17 +11,19 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.FullScreenContentCallback
+import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.google.android.gms.ads.nativead.MediaView
+import com.google.android.gms.ads.nativead.NativeAd
+import com.google.android.gms.ads.nativead.NativeAdOptions
+import com.google.android.gms.ads.nativead.NativeAdView
 
 class MainActivity : AppCompatActivity() {
 
-    private var adShown = false
+    private var nativeAd: NativeAd? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,32 +40,52 @@ class MainActivity : AppCompatActivity() {
             adapter = RowAdapter(MovieData.rows)
         }
 
-        // El anuncio se carga al abrir la app y se muestra sobre el catálogo en cuanto esté listo
+        // El anuncio se carga al abrir la app y se muestra sobre el catÃ¡logo en cuanto estÃ© listo
         MobileAds.initialize(this) { loadAd() }
     }
 
+    // El ID de "Pantalla en pantalla" (Picture-in-picture) es de formato nativo con video
     private fun loadAd() {
-        InterstitialAd.load(this, AD_UNIT_ID, AdRequest.Builder().build(),
-            object : InterstitialAdLoadCallback() {
-                override fun onAdLoaded(ad: InterstitialAd) {
-                    if (adShown || isFinishing || isDestroyed) return
-                    adShown = true
-                    ad.fullScreenContentCallback = object : FullScreenContentCallback() {
-                        override fun onAdFailedToShowFullScreenContent(error: AdError) {
-                            Log.e(TAG, "Error al mostrar: ${error.code} ${error.message}")
-                        }
-                    }
-                    ad.show(this@MainActivity)
+        val adLoader = AdLoader.Builder(this, AD_UNIT_ID)
+            .forNativeAd { ad ->
+                if (isDestroyed || isFinishing) {
+                    ad.destroy()
+                    return@forNativeAd
                 }
-
+                nativeAd?.destroy()
+                nativeAd = ad
+                showPipAd(ad)
+            }
+            .withAdListener(object : AdListener() {
                 override fun onAdFailedToLoad(error: LoadAdError) {
                     Log.e(TAG, "Error al cargar: ${error.code} ${error.message}")
                     Toast.makeText(this@MainActivity,
                         "Anuncio no disponible: ${error.message}", Toast.LENGTH_LONG).show()
                 }
             })
+            .withNativeAdOptions(NativeAdOptions.Builder().build())
+            .build()
+        adLoader.loadAd(AdRequest.Builder().build())
     }
 
+    private fun showPipAd(ad: NativeAd) {
+        val adView = findViewById<NativeAdView>(R.id.pipAdView)
+        val media = adView.findViewById<MediaView>(R.id.pipMedia)
+        val headline = adView.findViewById<TextView>(R.id.pipHeadline)
+
+        adView.mediaView = media
+        adView.headlineView = headline
+        headline.text = ad.headline
+        ad.mediaContent?.let { media.mediaContent = it }
+        adView.findViewById<View>(R.id.pipClose).setOnClickListener { adView.visibility = View.GONE }
+        adView.setNativeAd(ad)
+        adView.visibility = View.VISIBLE
+    }
+
+    override fun onDestroy() {
+        nativeAd?.destroy()
+        super.onDestroy()
+    }
     companion object {
         private const val TAG = "MainActivity"
         private const val AD_UNIT_ID = "ca-app-pub-3940256099942544/9657123429"
