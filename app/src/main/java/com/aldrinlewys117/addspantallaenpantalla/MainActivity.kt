@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
     // Sonda temporal: registra qué formatos acepta el ID (filtrar Logcat por "AdProbe")
     private fun probeFormats() {
         val req = AdRequest.Builder().build()
-        fun err(n: String, e: LoadAdError) = Log.e("AdProbe", "$n -> FALLA ${e.code} ${e.message}")
+        fun err(n: String, e: LoadAdError) { Log.e("AdProbe", "$n -> FALLA ${e.code} ${e.message}") }
         com.google.android.gms.ads.appopen.AppOpenAd.load(this, AD_UNIT_ID, req,
             object : com.google.android.gms.ads.appopen.AppOpenAd.AppOpenAdLoadCallback() {
                 override fun onAdLoaded(ad: com.google.android.gms.ads.appopen.AppOpenAd) { Log.i("AdProbe", "AppOpen -> OK") }
@@ -86,7 +86,7 @@ class MainActivity : AppCompatActivity() {
         com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd.load(this, AD_UNIT_ID, req,
             object : com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAdLoadCallback() {
                 override fun onAdLoaded(ad: com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd) { Log.i("AdProbe", "RewardedInterstitial -> OK") }
-                override fun onAdFailedToLoad(e: LoadAdError) = err("RewardedInterstitial", e)
+                override fun onAdFailedToLoad(e: LoadAdError): Unit = err("RewardedInterstitial", e)
             })
         val banner = com.google.android.gms.ads.AdView(this).apply {
             setAdSize(com.google.android.gms.ads.AdSize.MEDIUM_RECTANGLE)
