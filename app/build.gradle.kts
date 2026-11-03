@@ -38,7 +38,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)
-    implementation(libs.play.services.ads)
+    implementation(libs.gma.next.gen)
     implementation(libs.glide)
     implementation(libs.androidx.recyclerview)
     testImplementation(libs.junit)
