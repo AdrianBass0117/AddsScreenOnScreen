@@ -41,10 +41,13 @@ class MainActivity : AppCompatActivity() {
             adapter = RowAdapter(MovieData.rows)
         }
 
-        // GMA Next-Gen SDK exige inicializar antes de cargar; el App ID se pasa por código
-        MobileAds.initialize(this, InitializationConfig.Builder(APP_ID).build()) {
-            runOnUiThread { loadPipAd() }
-        }
+        Thread {
+            MobileAds.initialize(applicationContext, InitializationConfig.Builder(APP_ID).build()) {
+                runOnUiThread {
+                    if (!isFinishing && !isDestroyed) loadPipAd()
+                }
+            }
+        }.start()
     }
 
     private fun loadPipAd() {
